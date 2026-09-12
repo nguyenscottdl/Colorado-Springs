@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>South Park, Colorado</title>
+<title>Rocky Spring, Colorado — South Park Episode Picker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -108,6 +108,14 @@
   @media (max-width: 860px){
     main{grid-template-columns: 1fr;}
   }
+
+  .search-card{grid-column:1 / -1; padding:14px 18px;}
+  #searchInput{
+    width:100%; box-sizing:border-box; padding:11px 16px;
+    border-radius:100px; border:2px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:15px; font-family:inherit;
+  }
+  #searchInput:focus{outline:none; border-color:var(--blue);}
 
   .card{
     background:var(--card);
@@ -244,9 +252,21 @@
     width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block;
   }
   .episode-row.blocked, .episode-row.locked{opacity:.6;}
+  .season-group.dimmed{opacity:.35; transition:opacity .2s ease;}
+  .season-group{transition:opacity .2s ease;}
+  .movie-banner.dimmed{opacity:.3; transition:opacity .2s ease;}
+  .episode-row.search-hit{box-shadow:inset 0 0 0 2px var(--yellow); border-radius:6px;}
   .ep-unavailable{color:var(--ink-soft); font-size:12px; font-weight:700; white-space:nowrap;}
   .movie-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-weight:400; margin-top:2px;}
-  #moviesList{display:flex; flex-direction:column; gap:2px;}
+  .movie-banner{
+    margin:10px 0; padding:10px 10px 10px 14px;
+    border-radius:10px; border:2px dashed var(--blue);
+    background:var(--surface-soft);
+  }
+  .movie-banner .movie-icon{font-size:16px; flex-shrink:0;}
+  .movie-banner.watched{border-style:solid; border-color:var(--green); background:var(--watched-bg);}
+  .movie-banner.pending{border-color:var(--orange); background:rgba(242,101,34,0.12);}
+  .movie-banner.locked{border-style:solid; border-color:var(--line); opacity:.6;}
 
   /* --- Right column --- */
   .sidebar{position:sticky; top:20px; display:flex; flex-direction:column; gap:22px;}
@@ -314,13 +334,17 @@
 
 <header>
   <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-  <h1>South Park, Colorado Springs</h1>
+  <h1>Rocky Spring, Colorado</h1>
 </header>
 
 <p id="status">Loading the episode list…</p>
 <div id="errorBox"></div>
 
 <main id="mainContent" style="display:none;">
+  <div class="card search-card">
+    <input type="search" id="searchInput" placeholder="Search by name, or season/episode like S3E07…" autocomplete="off">
+  </div>
+
   <div class="left-col">
     <div class="card picker-card">
       <button id="randomBtn" disabled>Get a random episode</button>
@@ -338,14 +362,8 @@
 
     <div class="card browse-card">
       <h2>All episodes</h2>
-      <p class="sub">Everything pulled in, grouped by season. Watched episodes are checked off.</p>
+      <p class="sub">Everything pulled in, grouped by season — movies and specials appear where they fit chronologically.</p>
       <div id="seasonGroups"></div>
-    </div>
-
-    <div class="card browse-card" id="moviesCard" style="display:none;">
-      <h2>🎬 Movies &amp; Specials</h2>
-      <p class="sub">Not streamable on the site — trailers only. Locked until their required seasons are watched.</p>
-      <div id="moviesList"></div>
     </div>
   </div>
 
@@ -393,8 +411,7 @@
   const npStatus = document.getElementById('npStatus');
   const themeToggle = document.getElementById('themeToggle');
   const seasonGroupsEl = document.getElementById('seasonGroups');
-  const moviesCard = document.getElementById('moviesCard');
-  const moviesList = document.getElementById('moviesList');
+  const searchInput = document.getElementById('searchInput');
   const overallCountEl = document.getElementById('overallCount');
   const overallOfEl = document.getElementById('overallOf');
   const seasonBarsEl = document.getElementById('seasonBars');
@@ -406,6 +423,7 @@
   let episodes = [];        // full episode list from the API
   let bySeason = new Map(); // season number -> [episodes]
   const openSeasons = new Set();
+  let searchQuery = '';
   let nextInSeries = new Map(); // episode id -> the episode that continues its story
   let prevInSeries = new Map(); // episode id -> the episode it continues from
   let storyColor = new Map();   // episode id -> accent color, only set for multi-part stories
@@ -428,35 +446,35 @@
   const MOVIES = [
     { key:'blu', name:'South Park: Bigger, Longer & Uncut', year:1999,
       trailer:'https://www.youtube.com/watch?v=PKizGJk9kfI',
-      afterLabel:'Between Season 3 and Season 4',
+      afterSeason:3, afterLabel:'Between Season 3 and Season 4',
       requireSeasonsRange:[1,3], requireMovies:[] },
     { key:'postcovid', name:'South Park: Post COVID', year:2021,
       trailer:'https://www.youtube.com/watch?v=EH1dG4dlRw4',
-      afterLabel:'Between Season 24 and Season 25',
+      afterSeason:24, afterLabel:'Between Season 24 and Season 25',
       requireSeasonsRange:[23,24], requireMovies:[] },
     { key:'returncovid', name:'South Park: Post COVID: The Return of COVID', year:2021,
       trailer:'https://www.youtube.com/watch?v=L_FLZtOHnxc',
-      afterLabel:'Between Season 24 and Season 25',
+      afterSeason:24, afterLabel:'Between Season 24 and Season 25',
       requireSeasonsRange:[23,24], requireMovies:['postcovid'] },
     { key:'streamingwars1', name:'South Park: The Streaming Wars', year:2022,
       trailer:'https://www.youtube.com/watch?v=_up85YEpgz0',
-      afterLabel:'Between Season 25 and Season 26',
+      afterSeason:25, afterLabel:'Between Season 25 and Season 26',
       requireSeasonsRange:[23,25], requireMovies:['blu','postcovid','returncovid'] },
     { key:'streamingwars2', name:'South Park: The Streaming Wars Part 2', year:2022,
       trailer:'https://www.youtube.com/watch?v=ho1wRg4mBbc',
-      afterLabel:'Between Season 25 and Season 26',
+      afterSeason:25, afterLabel:'Between Season 25 and Season 26',
       requireSeasonsRange:[23,25], requireMovies:['streamingwars1'] },
     { key:'panderverse', name:'South Park: Joining the Panderverse', year:2023,
       trailer:'https://www.youtube.com/watch?v=-tydaNlU_NI',
-      afterLabel:'Between Season 26 and Season 27',
+      afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['blu','postcovid','returncovid','streamingwars1','streamingwars2'] },
     { key:'notsuitable', name:'South Park (Not Suitable for Children)', year:2023,
       trailer:'https://www.youtube.com/watch?v=AUpXVphTiXY',
-      afterLabel:'Between Season 26 and Season 27',
+      afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['panderverse'] },
     { key:'endobesity', name:'South Park: The End of Obesity', year:2024,
       trailer:'https://www.youtube.com/watch?v=agLzwOOQ2No',
-      afterLabel:'Between Season 26 and Season 27',
+      afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['notsuitable'] },
   ];
   const movieByEpId = new Map();
@@ -773,6 +791,23 @@
     ['The Pandemic Special', 'South ParQ Vaccination Special'],
   ];
 
+  function parseSearchQuery(q){
+    const m = q.trim().match(/^s(\d+)(?:e(\d+))?$/i);
+    if(!m) return null;
+    return { season: parseInt(m[1], 10), number: m[2] !== undefined ? parseInt(m[2], 10) : null };
+  }
+
+  function episodeMatchesSearch(ep, query){
+    const q = query.trim();
+    if(!q) return true;
+    const parsed = parseSearchQuery(q);
+    if(parsed){
+      if(parsed.number !== null) return ep.season === parsed.season && ep.number === parsed.number;
+      return ep.season === parsed.season;
+    }
+    return ep.name.toLowerCase().includes(q.toLowerCase());
+  }
+
   function findEp(season, number){
     return episodes.find(e => e.season === season && e.number === number) || null;
   }
@@ -875,19 +910,25 @@
   function renderBrowseList(){
     seasonGroupsEl.innerHTML = '';
     const seasons = [...bySeason.keys()].sort((a,b) => a - b);
+    const placedMovieKeys = new Set();
+    const hasSearch = searchQuery.trim() !== '';
+    let firstMatchEl = null;
+
     seasons.forEach(season => {
       const eps = bySeason.get(season);
       const seenCount = eps.filter(e => seenIds.has(e.id)).length;
+      const matchingEps = eps.filter(ep => episodeMatchesSearch(ep, searchQuery));
+      const seasonMatches = !hasSearch || matchingEps.length > 0;
 
       const group = document.createElement('div');
-      group.className = 'season-group';
+      group.className = 'season-group' + (hasSearch && !seasonMatches ? ' dimmed' : '');
 
       const toggle = document.createElement('button');
       toggle.className = 'season-toggle';
       toggle.innerHTML = `<span>Season ${season}</span><span class="count" data-role="count">${seenCount}/${eps.length} seen</span>`;
 
       const list = document.createElement('div');
-      list.className = 'episode-list' + (openSeasons.has(season) ? ' open' : '');
+      list.className = 'episode-list' + ((openSeasons.has(season) || (hasSearch && seasonMatches)) ? ' open' : '');
       list.dataset.season = season;
 
       eps.forEach(ep => {
@@ -895,8 +936,9 @@
         const isPending = pendingWatch.has(ep.id);
         const blocked = isBlocked(ep);
         const color = getStoryColor(ep);
+        const isHit = hasSearch && episodeMatchesSearch(ep, searchQuery);
         const row = document.createElement('div');
-        row.className = 'episode-row' + (isSeen ? ' watched' : isPending ? ' pending' : '') + (blocked ? ' blocked' : '');
+        row.className = 'episode-row' + (isSeen ? ' watched' : isPending ? ' pending' : '') + (blocked ? ' blocked' : '') + (isHit ? ' search-hit' : '');
         row.dataset.epId = ep.id;
         if(color) row.style.borderLeftColor = color;
         const status = isSeen ? '<span class="ep-check">✓ seen</span>'
@@ -933,48 +975,72 @@
       group.appendChild(toggle);
       group.appendChild(list);
       seasonGroupsEl.appendChild(group);
+
+      if(hasSearch && seasonMatches && !firstMatchEl) firstMatchEl = group;
+
+      MOVIES.filter(def => def.afterSeason === season).forEach(def => {
+        const row = buildMovieRow(def);
+        if(row){
+          const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
+          if(hasSearch && !movieHit) row.classList.add('dimmed');
+          else if(hasSearch && !firstMatchEl) firstMatchEl = row;
+          seasonGroupsEl.appendChild(row);
+          placedMovieKeys.add(def.key);
+        }
+      });
     });
+
+    MOVIES.filter(def => !placedMovieKeys.has(def.key)).forEach(def => {
+      const row = buildMovieRow(def);
+      if(row){
+        const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
+        if(hasSearch && !movieHit) row.classList.add('dimmed');
+        seasonGroupsEl.appendChild(row);
+      }
+    });
+
+    if(firstMatchEl){
+      firstMatchEl.scrollIntoView({ behavior:'smooth', block:'center' });
+    }
   }
 
-  function renderMovies(){
-    moviesList.innerHTML = '';
-    MOVIES.forEach(def => {
-      const ep = def.episode;
-      if(!ep) return;
-      const isSeen = seenIds.has(ep.id);
-      const isPending = pendingWatch.has(ep.id);
-      const status = movieStatus(def);
-      const locked = status.locked;
+  function buildMovieRow(def){
+    const ep = def.episode;
+    if(!ep) return null;
+    const isSeen = seenIds.has(ep.id);
+    const isPending = pendingWatch.has(ep.id);
+    const status = movieStatus(def);
+    const locked = status.locked;
 
-      const row = document.createElement('div');
-      row.className = 'episode-row' + (isSeen ? ' watched' : isPending ? ' pending' : locked ? ' locked' : '');
-      row.dataset.epId = ep.id;
+    const row = document.createElement('div');
+    row.className = 'episode-row movie-banner' + (isSeen ? ' watched' : isPending ? ' pending' : locked ? ' locked' : '');
+    row.dataset.epId = ep.id;
 
-      const lock = locked ? '🔒 ' : '';
-      const watchControl = locked
-        ? '<span class="ep-unavailable">Locked</span>'
-        : `<button class="ep-watch" type="button" data-ep-id="${ep.id}">Watch trailer</button>`;
-      const badge = isSeen ? '<span class="ep-check">✓ counted</span>'
-        : isPending ? '<span class="ep-check pending">⏳ watching</span>'
-        : '';
-      const subLine = locked ? `${def.afterLabel} — ${status.reason}` : def.afterLabel;
+    const lock = locked ? '🔒 ' : '';
+    const watchControl = locked
+      ? '<span class="ep-unavailable">Locked</span>'
+      : `<button class="ep-watch" type="button" data-ep-id="${ep.id}">Watch trailer</button>`;
+    const badge = isSeen ? '<span class="ep-check">✓ counted</span>'
+      : isPending ? '<span class="ep-check pending">⏳ watching</span>'
+      : '';
+    const subLine = locked ? `${def.afterLabel} — ${status.reason}` : def.afterLabel;
 
-      row.innerHTML = `
-        <span class="ep-thumbs">
-          <button class="thumb thumb-up" type="button" data-ep-id="${ep.id}" title="Mark watched" aria-label="Mark watched" ${locked ? 'disabled' : ''}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.1-.23.14-.47.14-.73v-2z"/></svg>
-          </button>
-          <button class="thumb thumb-down" type="button" data-ep-id="${ep.id}" title="Remove from watched" aria-label="Remove from watched">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
-          </button>
-        </span>
-        <span class="ep-name">${lock}${def.name}<span class="movie-sub">${subLine}</span></span>
-        <span class="ep-actions">
-          ${watchControl}
-          ${badge}
-        </span>`;
-      moviesList.appendChild(row);
-    });
+    row.innerHTML = `
+      <span class="ep-thumbs">
+        <button class="thumb thumb-up" type="button" data-ep-id="${ep.id}" title="Mark watched" aria-label="Mark watched" ${locked ? 'disabled' : ''}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.1-.23.14-.47.14-.73v-2z"/></svg>
+        </button>
+        <button class="thumb thumb-down" type="button" data-ep-id="${ep.id}" title="Remove from watched" aria-label="Remove from watched">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+        </button>
+      </span>
+      <span class="movie-icon">🎬</span>
+      <span class="ep-name">${lock}${def.name}<span class="movie-sub">${subLine}</span></span>
+      <span class="ep-actions">
+        ${watchControl}
+        ${badge}
+      </span>`;
+    return row;
   }
 
   function renderSeasonBars(){
@@ -1070,7 +1136,6 @@
 
   function renderAll(){
     renderBrowseList();
-    renderMovies();
     renderSeasonBars();
     renderOverall();
     renderLog();
@@ -1202,7 +1267,10 @@
     }
   }
   seasonGroupsEl.addEventListener('click', handleEpisodeListClick);
-  moviesList.addEventListener('click', handleEpisodeListClick);
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value;
+    renderBrowseList();
+  });
 
   tryReconnect();
 
@@ -1214,7 +1282,6 @@
       buildSeasonMap();
       statusEl.style.display = 'none';
       mainContent.style.display = 'grid';
-      moviesCard.style.display = 'block';
       renderAll();
     })
     .catch(err => {
