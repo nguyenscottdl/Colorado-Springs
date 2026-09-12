@@ -26,7 +26,7 @@
     --card: #FFFFFF;
     --ink: #20303B;
     --ink-soft: #5B6E7A;
-    --blue: #1CA7E0;
+    --blue: #171717;
     --blue-dark: #0F76A8;
     --orange: #F26522;
     --yellow: #FFCB05;
@@ -39,19 +39,25 @@
     --track: #E7EEF3;
     --log-bg: #FBFBFB;
     --error-bg: #FFF3F1;
-    --radius: 14px;
+    --radius: 0;
+    --radius-sm: 0;
+    --shadow: 0 1px 2px rgba(20,30,40,.08);
+    --blue-contrast: #fff;
   }
   [data-theme="dark"]{
     --bg: #101820;
-    --card: #182430;
+    --card: #171717;
     --ink: #EAF3FA;
     --ink-soft: #9FB4C2;
+    --blue: #E5E5E5;
     --line: #2A3B48;
     --surface-soft: #16222C;
     --watched-bg: rgba(76,175,109,0.18);
     --track: #24333F;
     --log-bg: #16202A;
     --error-bg: #2A1512;
+    --shadow: 0 1px 2px rgba(0,0,0,.35);
+    --blue-contrast: #171717;
   }
   body{transition:background .2s ease, color .2s ease;}
   body::before{
@@ -98,7 +104,7 @@
     text-decoration:none;
     background:transparent;
     border:1.5px solid #fff;
-    border-radius:4px;
+    border-radius:0;
     padding:6px 18px;
     cursor:pointer;
     transition:background .2s ease, opacity .2s ease;
@@ -155,7 +161,7 @@
   .theme-toggle{
     position:absolute; top:22px; right:24px;
     background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.4);
-    color:#fff; width:40px; height:40px; border-radius:100px;
+    color:#fff; width:40px; height:40px; border-radius:0;
     font-size:17px; cursor:pointer; z-index:2;
   }
   .theme-toggle:hover{background:rgba(255,255,255,.28);}
@@ -176,15 +182,16 @@
   .search-card{grid-column:1 / -1; padding:14px 18px;}
   #searchInput{
     width:100%; box-sizing:border-box; padding:11px 16px;
-    border-radius:100px; border:2px solid var(--line);
+    border-radius:var(--radius-sm); border:1px solid var(--line);
     background:var(--bg); color:var(--ink); font-size:15px; font-family:inherit;
   }
   #searchInput:focus{outline:none; border-color:var(--blue);}
 
   .card{
     background:var(--card);
-    border:2px solid var(--line);
+    border:1px solid var(--line);
     border-radius:var(--radius);
+    box-shadow:var(--shadow);
     padding:22px;
   }
 
@@ -200,7 +207,7 @@
     color:#fff;
     background:var(--orange);
     border:none;
-    border-radius:100px;
+    border-radius:var(--radius-sm);
     padding:16px 38px;
     cursor:pointer;
     box-shadow:0 4px 0 #B84A16;
@@ -216,10 +223,11 @@
   #nowPlaying{
     margin-top:22px;
     text-align:left;
-    border-radius:10px;
+    border-radius:var(--radius);
     padding:16px 18px;
     background:var(--surface-soft);
     border:2px dashed var(--blue);
+    box-shadow:var(--shadow);
     display:none;
   }
   #nowPlaying.show{display:block;}
@@ -227,10 +235,10 @@
     display:inline-block;
     font-size:12px;
     font-weight:700;
-    color:#fff;
+    color:var(--blue-contrast);
     background:var(--blue);
     padding:3px 10px;
-    border-radius:100px;
+    border-radius:var(--radius-sm);
     margin-bottom:8px;
   }
   #nowPlaying h3{font-size:19px;}
@@ -243,7 +251,7 @@
   .np-status.watched{color:var(--green); font-weight:700;}
   .watch-link{
     display:inline-block; margin-top:14px; font-size:13px; font-weight:700;
-    color:#fff; background:var(--blue); padding:8px 16px; border-radius:100px;
+    color:var(--blue-contrast); background:var(--blue); padding:8px 16px; border-radius:var(--radius-sm);
     text-decoration:none; border:none; cursor:pointer; font-family:inherit;
   }
   .watch-link:disabled{background:#B9C4CC; cursor:not-allowed;}
@@ -267,12 +275,25 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:12px 2px;
+    padding:12px 10px;
     cursor:pointer;
     font-family:'South Park', 'Baloo 2', sans-serif;
     font-size:16px;
     color:var(--ink);
+    position:relative;
+    overflow:hidden;
   }
+  .season-toggle > span:not(.season-texture){position:relative; z-index:1; transition:filter .35s ease;}
+  .season-texture{
+    position:absolute; inset:0; z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    filter:brightness(.75) blur(2px);
+    transform:scale(1.08);
+    opacity:0; transition:opacity .35s ease;
+    pointer-events:none;
+  }
+  .season-toggle:hover .season-texture,
+  .season-group.open .season-texture{opacity:1;}
   .season-toggle .count{
     font-family:'South Park', 'Nunito Sans', sans-serif;
     font-weight:700;
@@ -288,7 +309,7 @@
     gap:8px;
     padding:7px 6px 7px 10px;
     font-size:14px;
-    border-radius:6px;
+    border-radius:0;
     border-left:4px solid transparent;
   }
   .episode-row.watched{background:var(--watched-bg);}
@@ -299,8 +320,8 @@
   .ep-thumbs{
     display:flex; gap:2px; align-items:center;
     position:absolute; left:2px; top:50%; transform:translateY(-50%);
-    background:var(--card); border:1px solid var(--line); border-radius:8px;
-    padding:2px 4px; box-shadow:0 2px 8px rgba(0,0,0,.2);
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:2px 4px; box-shadow:var(--shadow);
     opacity:0; pointer-events:none; transition:opacity .12s ease;
     z-index:5;
   }
@@ -313,7 +334,7 @@
   .thumb:disabled{color:var(--line); cursor:not-allowed;}
   .thumb svg{display:block;}
   .story-dot{
-    width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block;
+    width:8px; height:8px; border-radius:0; flex-shrink:0; display:inline-block;
   }
   .episode-row.blocked, .episode-row.locked{opacity:.6;}
   .season-group.dimmed{opacity:.35; transition:opacity .2s ease;}
@@ -321,37 +342,35 @@
   .season-break{
     display:flex;
     align-items:center;
+    justify-content:center;
     text-align:center;
-    color:var(--orange);
+    background:#171717;
+    color:#fff;
     font-size:13px;
     font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.5px;
     margin:18px 0;
-    gap:12px;
+    padding:10px 16px;
     width:100%;
     max-width:100%;
     box-sizing:border-box;
     transition:opacity .2s ease;
-  }
-  .season-break::before,
-  .season-break::after{
-    content:"";
-    flex:1;
-    border-bottom:2px solid var(--orange);
-    min-width:12px;
   }
   .season-break span{
     flex-shrink:1;
     max-width:100%;
   }
   .season-break.dimmed{opacity:.35;}
-  .episode-row.search-hit{background:rgba(242,101,34,0.15); border-radius:6px;}
+  .episode-row.search-hit{background:rgba(242,101,34,0.15); border-radius:0;}
   .ep-unavailable{color:var(--ink-soft); font-size:12px; font-weight:700; white-space:nowrap;}
   .movie-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-weight:400; margin-top:2px;}
   .movie-group{
     margin:10px 0;
-    border-radius:10px;
+    border-radius:var(--radius);
     border:2px dashed var(--blue);
     background:var(--surface-soft);
+    box-shadow:var(--shadow);
     overflow:hidden;
     transition:opacity .2s ease, border-color .2s ease, background .2s ease;
   }
@@ -404,7 +423,7 @@
   .movie-progress-box{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:var(--radius);
     padding:10px 12px;
   }
   .movie-progress-head{
@@ -446,14 +465,14 @@
     display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;
   }
   .season-bar-row .labels span:last-child{color:var(--ink-soft);}
-  .bar-track{background:var(--track); border-radius:100px; height:8px; overflow:hidden;}
-  .bar-fill{height:100%; border-radius:100px;}
+  .bar-track{background:var(--track); border-radius:0; height:8px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:0;}
 
   .log-card h2{font-size:19px; margin-bottom:14px;}
   .log-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:2px;}
   .log-card-head h2{margin-bottom:0;}
   .folder-btn{
-    background:var(--blue); color:#fff; border:none; border-radius:100px;
+    background:var(--blue); color:var(--blue-contrast); border:none; border-radius:var(--radius-sm);
     padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
     white-space:nowrap;
   }
@@ -462,17 +481,16 @@
   #watchLog{list-style:none; margin:0; padding:0; max-height:420px; overflow-y:auto;}
   #watchLog li{
     background:var(--log-bg);
-    border:2px solid var(--line);
-    border-radius:10px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
     padding:10px 12px;
     margin-bottom:10px;
     font-size:13.5px;
   }
-  #watchLog li:nth-child(odd){transform:rotate(-0.6deg);}
-  #watchLog li:nth-child(even){transform:rotate(0.6deg);}
   #watchLog li .ep-title{font-weight:700; display:block; margin-bottom:2px;}
   #watchLog li .ep-sub{color:var(--ink-soft); font-size:12px;}
-  #watchLog .empty{color:var(--ink-soft); font-style:italic; border-style:dashed; transform:none;}
+  #watchLog .empty{color:var(--ink-soft); font-style:italic; border-style:dashed; box-shadow:none;}
 
   .reset-link{
     background:none; border:none; color:var(--ink-soft);
@@ -484,12 +502,12 @@
     max-width:1180px; margin:0 auto; padding:0 24px; color:var(--ink-soft); font-size:14px;
   }
   .error-box{
-    background:var(--error-bg); border:2px solid var(--red); color:var(--red);
-    border-radius:10px; padding:14px 16px; margin:20px 24px 0; max-width:1132px;
+    background:var(--error-bg); border:1px solid var(--red); color:var(--red);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:14px 16px; margin:20px 24px 0; max-width:1132px;
   }
   .error-box button{
     margin-top:8px; background:var(--red); color:#fff; border:none;
-    padding:8px 16px; border-radius:100px; cursor:pointer; font-weight:700;
+    padding:8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-weight:700;
   }
   :focus-visible{outline:3px solid var(--yellow); outline-offset:2px;}
 </style>
@@ -1159,14 +1177,16 @@
       }
 
       const group = document.createElement('div');
-      group.className = 'season-group' + (hasSearch && !seasonMatches ? ' dimmed' : '');
+      const isOpen = openSeasons.has(season) || (hasSearch && seasonMatches);
+      group.className = 'season-group' + (hasSearch && !seasonMatches ? ' dimmed' : '') + (isOpen ? ' open' : '');
 
       const toggle = document.createElement('button');
       toggle.className = 'season-toggle';
-      toggle.innerHTML = `<span>Season ${season}</span><span class="count" data-role="count">${seenCount}/${eps.length} seen</span>`;
+      const textureUrl = `Assets/Textures/button_s${String(season).padStart(2,'0')}.png`;
+      toggle.innerHTML = `<span class="season-texture" style="background-image:url('${textureUrl}')"></span><span>Season ${season}</span><span class="count" data-role="count">${seenCount}/${eps.length} seen</span>`;
 
       const list = document.createElement('div');
-      list.className = 'episode-list' + ((openSeasons.has(season) || (hasSearch && seasonMatches)) ? ' open' : '');
+      list.className = 'episode-list' + (isOpen ? ' open' : '');
       list.dataset.season = season;
 
       eps.forEach(ep => {
@@ -1206,6 +1226,7 @@
 
       toggle.addEventListener('click', () => {
         list.classList.toggle('open');
+        group.classList.toggle('open', list.classList.contains('open'));
         if(list.classList.contains('open')) openSeasons.add(season);
         else openSeasons.delete(season);
       });
