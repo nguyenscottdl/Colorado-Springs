@@ -3,10 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rocky Spring, Colorado — South Park Episode Picker</title>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Colorado Springs — South Park Episode Picker</title>
+<link rel="icon" type="image/x-icon" href="Assets/Icons/site_favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="Assets/Icons/site_favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="Assets/Icons/site_favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="Assets/Icons/site_favicon/apple-touch-icon.png">
+<link rel="manifest" href="Assets/Icons/site_favicon/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  @font-face {
+    font-family: 'South Park';
+    src: url('Assets/Fonts/south%20park.ttf') format('truetype'),
+         url('Assets/Fonts/south park.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
   :root{
     --bg: #E9F4FB;
     --card: #FFFFFF;
@@ -44,7 +58,7 @@
     content:"";
     position:fixed;
     inset:0;
-background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
+    background-image: url("Assets/Background/background.jpg");
     background-size:cover;
     background-position:center;
     filter:blur(6px);
@@ -56,38 +70,88 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     margin:0;
     background:var(--bg);
     color:var(--ink);
-    font-family:'Nunito Sans', sans-serif;
+    font-family:'South Park', 'Nunito Sans', sans-serif;
     line-height:1.5;
   }
   h1,h2,h3, .display{
-    font-family:'Baloo 2', sans-serif;
+    font-family:'South Park', 'Baloo 2', sans-serif;
     font-weight:800;
     margin:0;
   }
-  header{
-    background:#000000;
+  .top-bar{
+    background:#455492;
+    padding:12px 16px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    z-index:10;
+  }
+  .top-bar-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     color:#fff;
-    padding:32px 24px 40px;
+    font-family:'South Park', 'Nunito Sans', sans-serif;
+    font-size:13px;
+    font-weight:700;
+    text-decoration:none;
+    background:transparent;
+    border:1.5px solid #fff;
+    border-radius:4px;
+    padding:6px 18px;
+    cursor:pointer;
+    transition:background .2s ease, opacity .2s ease;
+    text-align:center;
+    line-height:1.3;
+  }
+  .top-bar-btn:hover{
+    background:rgba(255,255,255,0.2);
+    color:#fff;
+  }
+  header{
+    background:#171717;
+    color:#fff;
+    padding:28px 24px 44px;
     position:relative;
     overflow:hidden;
-    border-bottom:6px solid #000000;
+    text-align:center;
   }
   header::after{
     content:"";
     position:absolute;
-    bottom:-1px; left:0; right:0;
-    height:42px;
+    bottom:0; left:0; right:0;
+    height:44px;
     background-repeat:repeat-x;
     background-position:bottom;
-    background-size:220px 42px;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 42'%3E%3Cpolygon points='0,42 16,16 34,30 52,8 70,26 90,12 110,32 130,10 150,28 168,15 186,30 202,18 220,28 220,42 0,42' fill='%23E9F4FB'/%3E%3C/svg%3E");
+    background-size:320px 44px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 44'%3E%3Cpolygon points='0,44 0,26 28,14 58,28 92,6 130,24 156,16 184,30 220,8 254,22 282,12 320,26 320,44' fill='%23839DA9'/%3E%3Cpolygon points='28,14 40,20 34,22 28,19 22,22 16,19' fill='%23DBD4D6'/%3E%3Cpolygon points='92,6 113,16 104,18 94,15 85,18 76,16' fill='%23DBD4D6'/%3E%3Cpolygon points='156,16 166,21 161,23 156,21 150,23 143,20' fill='%23DBD4D6'/%3E%3Cpolygon points='220,8 244,18 236,20 226,17 215,20 202,19' fill='%23DBD4D6'/%3E%3Cpolygon points='282,12 299,18 293,21 284,18 276,21 268,17' fill='%23DBD4D6'/%3E%3C/svg%3E");
     z-index:1;
   }
-  [data-theme="dark"] header::after{
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 42'%3E%3Cpolygon points='0,42 16,16 34,30 52,8 70,26 90,12 110,32 130,10 150,28 168,15 186,30 202,18 220,28 220,42 0,42' fill='%23101820'/%3E%3C/svg%3E");
+  .header-content{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    position:relative;
+    z-index:2;
+    max-width:1180px;
+    margin:0 auto;
   }
-  header h1{font-size: clamp(28px, 4vw, 40px); letter-spacing:.5px; position:relative; z-index:2;}
-  header p{margin:8px 0 0; max-width:56ch; color:#EAF6FF; font-size:15px;}
+  .header-icon{
+    height:clamp(28px, 4vw, 42px);
+    width:auto;
+    object-fit:contain;
+    display:block;
+  }
+  header h1{
+    font-size:clamp(28px, 4vw, 42px);
+    letter-spacing:.5px;
+    position:relative;
+    z-index:2;
+    margin:0;
+    line-height:1.1;
+  }
   .theme-toggle{
     position:absolute; top:22px; right:24px;
     background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.4);
@@ -130,7 +194,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     padding:30px 22px;
   }
   #randomBtn{
-    font-family:'Baloo 2', sans-serif;
+    font-family:'South Park', 'Baloo 2', sans-serif;
     font-weight:700;
     font-size:19px;
     color:#fff;
@@ -205,12 +269,12 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     align-items:center;
     padding:12px 2px;
     cursor:pointer;
-    font-family:'Baloo 2', sans-serif;
+    font-family:'South Park', 'Baloo 2', sans-serif;
     font-size:16px;
     color:var(--ink);
   }
   .season-toggle .count{
-    font-family:'Nunito Sans', sans-serif;
+    font-family:'South Park', 'Nunito Sans', sans-serif;
     font-weight:700;
     font-size:12.5px;
     color:var(--ink-soft);
@@ -254,19 +318,119 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
   .episode-row.blocked, .episode-row.locked{opacity:.6;}
   .season-group.dimmed{opacity:.35; transition:opacity .2s ease;}
   .season-group{transition:opacity .2s ease;}
-  .movie-banner.dimmed{opacity:.3; transition:opacity .2s ease;}
+  .season-break{
+    display:flex;
+    align-items:center;
+    text-align:center;
+    color:var(--orange);
+    font-size:13px;
+    font-weight:700;
+    margin:18px 0;
+    gap:12px;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    transition:opacity .2s ease;
+  }
+  .season-break::before,
+  .season-break::after{
+    content:"";
+    flex:1;
+    border-bottom:2px solid var(--orange);
+    min-width:12px;
+  }
+  .season-break span{
+    flex-shrink:1;
+    max-width:100%;
+  }
+  .season-break.dimmed{opacity:.35;}
   .episode-row.search-hit{background:rgba(242,101,34,0.15); border-radius:6px;}
   .ep-unavailable{color:var(--ink-soft); font-size:12px; font-weight:700; white-space:nowrap;}
   .movie-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-weight:400; margin-top:2px;}
-  .movie-banner{
-    margin:10px 0; padding:10px 10px 10px 14px;
-    border-radius:10px; border:2px dashed var(--blue);
+  .movie-group{
+    margin:10px 0;
+    border-radius:10px;
+    border:2px dashed var(--blue);
     background:var(--surface-soft);
+    overflow:hidden;
+    transition:opacity .2s ease, border-color .2s ease, background .2s ease;
+  }
+  .movie-group.watched{border-style:solid; border-color:var(--green); background:var(--watched-bg);}
+  .movie-group.pending{border-color:var(--orange); background:rgba(242,101,34,0.12);}
+  .movie-group.locked{border-style:solid; border-color:var(--line); opacity:.6;}
+  .movie-group.dimmed{opacity:.3; transition:opacity .2s ease;}
+  .movie-banner{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 10px 10px 14px;
+    position:relative;
+    cursor:pointer;
+    user-select:none;
+    margin:0;
+    border:none;
+    border-radius:0;
+    background:transparent;
   }
   .movie-banner .movie-icon{font-size:16px; flex-shrink:0;}
-  .movie-banner.watched{border-style:solid; border-color:var(--green); background:var(--watched-bg);}
-  .movie-banner.pending{border-color:var(--orange); background:rgba(242,101,34,0.12);}
-  .movie-banner.locked{border-style:solid; border-color:var(--line); opacity:.6;}
+  .movie-banner:hover .ep-thumbs, .movie-banner:focus-within .ep-thumbs{opacity:1; pointer-events:auto;}
+  .movie-chevron{
+    font-size:12px;
+    color:var(--ink-soft);
+    display:inline-block;
+    transition:transform .2s ease;
+    margin-left:4px;
+  }
+  .movie-group.open .movie-chevron{
+    transform:rotate(180deg);
+  }
+  .movie-expanded{
+    display:none;
+    padding:10px 14px 14px;
+    border-top:1px solid var(--line);
+    background:rgba(0,0,0,0.02);
+  }
+  [data-theme="dark"] .movie-expanded{
+    background:rgba(255,255,255,0.02);
+  }
+  .movie-group.open .movie-expanded{
+    display:block;
+  }
+  .movie-expanded-grid{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .movie-progress-box{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .movie-progress-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    font-weight:700;
+  }
+  .movie-req-list{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    margin-top:6px;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .movie-req-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .movie-req-item.done{
+    color:var(--green);
+    font-weight:700;
+  }
 
   /* --- Right column --- */
   .sidebar{position:sticky; top:20px; display:flex; flex-direction:column; gap:22px;}
@@ -274,7 +438,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
   .overall{
     display:flex; align-items:baseline; gap:8px; margin:10px 0 18px;
   }
-  .overall .big{font-family:'Baloo 2'; font-size:30px; color:var(--orange);}
+  .overall .big{font-family:'South Park', 'Baloo 2', sans-serif; font-size:30px; color:var(--orange);}
   .overall .of{color:var(--ink-soft); font-size:14px;}
 
   .season-bar-row{margin-bottom:12px;}
@@ -332,9 +496,16 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
 </head>
 <body>
 
+<div class="top-bar">
+  <a href="https://www.southparkstudios.com" target="_blank" rel="noopener noreferrer" class="top-bar-btn">WATCH EVERYTHING SOUTH AMERICA - GO TO SOUTHPARKSTUDIOS</a>
+</div>
+
 <header>
   <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-  <h1>Rocky Spring, Colorado</h1>
+  <div class="header-content">
+    <img src="Assets/Icons/icon.png" alt="Colorado Springs Icon" class="header-icon">
+    <h1>Colorado Springs</h1>
+  </div>
 </header>
 
 <p id="status">Loading the episode list…</p>
@@ -423,6 +594,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
   let episodes = [];        // full episode list from the API
   let bySeason = new Map(); // season number -> [episodes]
   const openSeasons = new Set();
+  const openMovies = new Set();
   let searchQuery = '';
   let nextInSeries = new Map(); // episode id -> the episode that continues its story
   let prevInSeries = new Map(); // episode id -> the episode it continues from
@@ -445,35 +617,27 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
 
   const MOVIES = [
     { key:'blu', name:'South Park: Bigger, Longer & Uncut', year:1999,
-      trailer:'https://www.youtube.com/watch?v=PKizGJk9kfI',
       afterSeason:3, afterLabel:'Between Season 3 and Season 4',
       requireSeasonsRange:[1,3], requireMovies:[] },
     { key:'postcovid', name:'South Park: Post COVID', year:2021,
-      trailer:'https://www.youtube.com/watch?v=EH1dG4dlRw4',
       afterSeason:24, afterLabel:'Between Season 24 and Season 25',
       requireSeasonsRange:[23,24], requireMovies:[] },
     { key:'returncovid', name:'South Park: Post COVID: The Return of COVID', year:2021,
-      trailer:'https://www.youtube.com/watch?v=L_FLZtOHnxc',
       afterSeason:24, afterLabel:'Between Season 24 and Season 25',
       requireSeasonsRange:[23,24], requireMovies:['postcovid'] },
     { key:'streamingwars1', name:'South Park: The Streaming Wars', year:2022,
-      trailer:'https://www.youtube.com/watch?v=_up85YEpgz0',
       afterSeason:25, afterLabel:'Between Season 25 and Season 26',
       requireSeasonsRange:[23,25], requireMovies:['blu','postcovid','returncovid'] },
     { key:'streamingwars2', name:'South Park: The Streaming Wars Part 2', year:2022,
-      trailer:'https://www.youtube.com/watch?v=ho1wRg4mBbc',
       afterSeason:25, afterLabel:'Between Season 25 and Season 26',
       requireSeasonsRange:[23,25], requireMovies:['streamingwars1'] },
     { key:'panderverse', name:'South Park: Joining the Panderverse', year:2023,
-      trailer:'https://www.youtube.com/watch?v=-tydaNlU_NI',
       afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['blu','postcovid','returncovid','streamingwars1','streamingwars2'] },
     { key:'notsuitable', name:'South Park (Not Suitable for Children)', year:2023,
-      trailer:'https://www.youtube.com/watch?v=AUpXVphTiXY',
       afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['panderverse'] },
     { key:'endobesity', name:'South Park: The End of Obesity', year:2024,
-      trailer:'https://www.youtube.com/watch?v=agLzwOOQ2No',
       afterSeason:26, afterLabel:'Between Season 26 and Season 27',
       requireSeasonsRange:[1,26], requireMovies:['notsuitable'] },
   ];
@@ -657,6 +821,71 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     } catch(e){
       return null;
     }
+  }
+
+  function escapeHtml(str){
+    if(!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getRequiredContentProgress(def){
+    let reqEpsTotal = 0;
+    let reqEpsSeen = 0;
+    const seasonDetails = [];
+
+    if(def.requireSeasonsRange){
+      const [minS, maxS] = def.requireSeasonsRange;
+      for(let s = minS; s <= maxS; s++){
+        const epsInSeason = bySeason.get(s) || [];
+        const seenInSeason = epsInSeason.filter(e => seenIds.has(e.id)).length;
+        reqEpsTotal += epsInSeason.length;
+        reqEpsSeen += seenInSeason;
+        seasonDetails.push({
+          season: s,
+          seen: seenInSeason,
+          total: epsInSeason.length,
+          pct: epsInSeason.length ? Math.round((seenInSeason / epsInSeason.length) * 100) : 100
+        });
+      }
+    }
+
+    const movieDetails = [];
+    let reqMoviesTotal = (def.requireMovies || []).length;
+    let reqMoviesSeen = 0;
+    for(const reqKey of (def.requireMovies || [])){
+      const reqDef = movieByKey.get(reqKey);
+      if(reqDef){
+        const isSeen = reqDef.episode && seenIds.has(reqDef.episode.id);
+        if(isSeen) reqMoviesSeen++;
+        movieDetails.push({
+          key: reqKey,
+          name: reqDef.name,
+          seen: isSeen
+        });
+      }
+    }
+
+    const totalItems = reqEpsTotal + reqMoviesTotal;
+    const seenItems = reqEpsSeen + reqMoviesSeen;
+    const overallPct = totalItems > 0 ? Math.round((seenItems / totalItems) * 100) : 100;
+
+    return {
+      reqEpsTotal,
+      reqEpsSeen,
+      seasonDetails,
+      reqMoviesTotal,
+      reqMoviesSeen,
+      movieDetails,
+      totalItems,
+      seenItems,
+      overallPct,
+      isComplete: totalItems > 0 ? seenItems === totalItems : true
+    };
   }
 
   function openWatchWindow(ep){
@@ -921,6 +1150,14 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
       const matchingEps = eps.filter(ep => episodeMatchesSearch(ep, searchQuery));
       const seasonMatches = !hasSearch || matchingEps.length > 0;
 
+      if(season === 20){
+        const breakMatches = !hasSearch || seasonMatches || 'contextual changes and characters are important to understand the following contents'.toLowerCase().includes(searchQuery.toLowerCase());
+        const breakEl = document.createElement('div');
+        breakEl.className = 'season-break' + (!breakMatches ? ' dimmed' : '');
+        breakEl.innerHTML = `<span>contextual changes and characters are important to understand the following contents</span>`;
+        seasonGroupsEl.appendChild(breakEl);
+      }
+
       const group = document.createElement('div');
       group.className = 'season-group' + (hasSearch && !seasonMatches ? ' dimmed' : '');
 
@@ -959,7 +1196,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
               <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
             </button>
           </span>
-          <span class="ep-name">${dot}${lock}S${ep.season}E${String(ep.number).padStart(2,'0')} — ${ep.name}</span>
+          <span class="ep-name">${dot}${lock}S${ep.season}E${String(ep.number).padStart(2,'0')} — ${escapeHtml(ep.name)}</span>
           <span class="ep-actions">
             ${watchControl}
             ${status}
@@ -980,9 +1217,9 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
       if(hasSearch && seasonMatches && !firstMatchEl) firstMatchEl = group;
 
       MOVIES.filter(def => def.afterSeason === season).forEach(def => {
-        const row = buildMovieRow(def);
+        const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
+        const row = buildMovieRow(def, hasSearch, movieHit);
         if(row){
-          const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
           if(hasSearch && !movieHit) row.classList.add('dimmed');
           else if(hasSearch && !firstMatchEl) firstMatchEl = row;
           seasonGroupsEl.appendChild(row);
@@ -992,9 +1229,9 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     });
 
     MOVIES.filter(def => !placedMovieKeys.has(def.key)).forEach(def => {
-      const row = buildMovieRow(def);
+      const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
+      const row = buildMovieRow(def, hasSearch, movieHit);
       if(row){
-        const movieHit = !hasSearch || episodeMatchesSearch(def.episode, searchQuery);
         if(hasSearch && !movieHit) row.classList.add('dimmed');
         seasonGroupsEl.appendChild(row);
       }
@@ -1005,43 +1242,99 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     }
   }
 
-  function buildMovieRow(def){
+  function buildMovieRow(def, hasSearch, movieHit){
     const ep = def.episode;
     if(!ep) return null;
     const isSeen = seenIds.has(ep.id);
     const isPending = pendingWatch.has(ep.id);
     const status = movieStatus(def);
     const locked = status.locked;
+    const progress = getRequiredContentProgress(def);
+    const isOpen = openMovies.has(def.key) || (hasSearch && movieHit);
 
-    const row = document.createElement('div');
-    row.className = 'episode-row movie-banner' + (isSeen ? ' watched' : isPending ? ' pending' : locked ? ' locked' : '');
-    row.dataset.epId = ep.id;
+    const group = document.createElement('div');
+    group.className = 'movie-group' + (isSeen ? ' watched' : isPending ? ' pending' : locked ? ' locked' : '') + (isOpen ? ' open' : '');
+    group.dataset.movieKey = def.key;
 
     const lock = locked ? '🔒 ' : '';
-    const watchControl = locked
-      ? '<span class="ep-unavailable">Locked</span>'
-      : `<button class="ep-watch" type="button" data-ep-id="${ep.id}">Watch trailer</button>`;
     const badge = isSeen ? '<span class="ep-check">✓ counted</span>'
       : isPending ? '<span class="ep-check pending">⏳ watching</span>'
       : '';
     const subLine = locked ? `${def.afterLabel} — ${status.reason}` : def.afterLabel;
+    const isHit = hasSearch && movieHit;
 
-    row.innerHTML = `
-      <span class="ep-thumbs">
-        <button class="thumb thumb-up" type="button" data-ep-id="${ep.id}" title="Mark watched" aria-label="Mark watched" ${locked ? 'disabled' : ''}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.1-.23.14-.47.14-.73v-2z"/></svg>
-        </button>
-        <button class="thumb thumb-down" type="button" data-ep-id="${ep.id}" title="Remove from watched" aria-label="Remove from watched">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
-        </button>
-      </span>
-      <span class="movie-icon">🎬</span>
-      <span class="ep-name">${lock}${def.name}<span class="movie-sub">${subLine}</span></span>
-      <span class="ep-actions">
-        ${watchControl}
-        ${badge}
-      </span>`;
-    return row;
+    let reqItemsHtml = '';
+    if(progress.seasonDetails.length > 0){
+      const [minS, maxS] = def.requireSeasonsRange;
+      const rangeLabel = minS === maxS ? `Season ${minS}` : `Seasons ${minS}–${maxS}`;
+      const isRangeDone = progress.reqEpsSeen === progress.reqEpsTotal;
+      reqItemsHtml += `
+        <div class="movie-req-item ${isRangeDone ? 'done' : ''}">
+          <span>${isRangeDone ? '✓' : '•'} ${rangeLabel}</span>
+          <span>${progress.reqEpsSeen}/${progress.reqEpsTotal} episodes</span>
+        </div>`;
+    }
+    progress.movieDetails.forEach(m => {
+      reqItemsHtml += `
+        <div class="movie-req-item ${m.seen ? 'done' : ''}">
+          <span>${m.seen ? '✓' : '•'} Movie: ${escapeHtml(m.name)}</span>
+          <span>${m.seen ? 'Watched' : 'Not watched'}</span>
+        </div>`;
+    });
+    if(!reqItemsHtml){
+      reqItemsHtml = '<div class="movie-req-item done"><span>✓ No prerequisites required</span></div>';
+    }
+
+    group.innerHTML = `
+      <div class="episode-row movie-banner movie-toggle${isHit ? ' search-hit' : ''}" data-ep-id="${ep.id}" data-movie-key="${def.key}">
+        <span class="ep-thumbs">
+          <button class="thumb thumb-up" type="button" data-ep-id="${ep.id}" title="Mark watched" aria-label="Mark watched" ${locked ? 'disabled' : ''}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.1-.23.14-.47.14-.73v-2z"/></svg>
+          </button>
+          <button class="thumb thumb-down" type="button" data-ep-id="${ep.id}" title="Remove from watched" aria-label="Remove from watched">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+          </button>
+        </span>
+        <span class="movie-icon">🎬</span>
+        <span class="ep-name">${lock}${escapeHtml(def.name)}<span class="movie-sub">${escapeHtml(subLine)}</span></span>
+        <span class="ep-actions">
+          ${locked ? '<span class="ep-unavailable">Locked</span>' : ''}
+          ${badge}
+          <span class="movie-chevron">▾</span>
+        </span>
+      </div>
+      <div class="movie-expanded ${isOpen ? 'open' : ''}">
+        <div class="movie-expanded-grid">
+          <div class="movie-progress-box">
+            <div class="movie-progress-head">
+              <span>Required Watch Progress</span>
+              <span>${progress.seenItems}/${progress.totalItems} (${progress.overallPct}%)</span>
+            </div>
+            <div class="bar-track" style="height:6px; margin:6px 0 8px;">
+              <div class="bar-fill" style="width:${progress.overallPct}%; background:var(--orange);"></div>
+            </div>
+            <div class="movie-req-list">
+              ${reqItemsHtml}
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    const toggle = group.querySelector('.movie-toggle');
+    const expandedEl = group.querySelector('.movie-expanded');
+    toggle.addEventListener('click', (e) => {
+      if(e.target.closest('.thumb')) return;
+      const willBeOpen = !group.classList.contains('open');
+      group.classList.toggle('open', willBeOpen);
+      expandedEl.classList.toggle('open', willBeOpen);
+      if(willBeOpen){
+        openMovies.add(def.key);
+      } else {
+        openMovies.delete(def.key);
+      }
+    });
+
+    return group;
   }
 
   function renderSeasonBars(){
@@ -1169,13 +1462,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
 
   function handleWatchClick(ep){
     if(isBlocked(ep)) return;
-    const movieDef = movieByEpId.get(ep.id);
-    if(movieDef){
-      if(movieStatus(movieDef).locked) return;
-      window.open(movieDef.trailer, 'sp-watch-window', 'width=1000,height=650,menubar=no,toolbar=no,location=yes');
-      startWatchTimer(ep);
-      return;
-    }
+    if(ep.isMovie) return;
     openWatchWindow(ep);
     startWatchTimer(ep);
   }
