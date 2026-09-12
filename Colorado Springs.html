@@ -255,7 +255,7 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
   .season-group.dimmed{opacity:.35; transition:opacity .2s ease;}
   .season-group{transition:opacity .2s ease;}
   .movie-banner.dimmed{opacity:.3; transition:opacity .2s ease;}
-  .episode-row.search-hit{box-shadow:inset 0 0 0 2px var(--yellow); border-radius:6px;}
+  .episode-row.search-hit{background:rgba(242,101,34,0.15); border-radius:6px;}
   .ep-unavailable{color:var(--ink-soft); font-size:12px; font-weight:700; white-space:nowrap;}
   .movie-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-weight:400; margin-top:2px;}
   .movie-banner{
@@ -697,17 +697,18 @@ background-image: url("https://i.imgur.com/hKSAQ1i.jpeg");
     if(!searchRes.ok) throw new Error('Could not find the show on TVMaze.');
     const show = await searchRes.json();
 
-    const epRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes`);
+    const epRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes?specials=1`);
     if(!epRes.ok) throw new Error('Could not load the episode list.');
     const data = await epRes.json();
 
+    let s24EpisodeNumber = 1;
     return data
-      .filter(e => e.season && e.number)
+      .filter(e => (e.season && e.number) || e.season === 24)
       .map(e => ({
         id: e.id,
         season: e.season,
-        number: e.number,
-        name: e.name || `Episode ${e.number}`,
+        number: e.number || (e.season === 24 ? s24EpisodeNumber++ : 1),
+        name: e.name || `Episode ${e.number || (s24EpisodeNumber - 1)}`,
         airdate: e.airdate || '',
         summary: stripHtml(e.summary)
       }));
