@@ -362,6 +362,12 @@
   .episode-row .ep-name{color:var(--ink); flex:1; display:flex; align-items:center; gap:6px; min-width:0;}
   .episode-row .ep-check{color:var(--green); font-weight:700; font-size:13px; white-space:nowrap;}
   .episode-row .ep-check.pending{color:var(--orange);}
+  .ep-share{
+    background:none; border:none; cursor:pointer; padding:2px;
+    color:var(--ink-soft); display:flex; align-items:center;
+  }
+  .ep-share:hover{color:var(--blue);}
+  .ep-share.copied{color:var(--green);}
   .ep-thumbs{
     display:flex; gap:2px; align-items:center;
     position:absolute; left:2px; top:50%; transform:translateY(-50%);
@@ -518,15 +524,17 @@
   .log-card-head h2{margin-bottom:0;}
   .log-toggle{
     display:flex; align-items:center; gap:8px;
-    background:none; border:none; cursor:pointer; padding:0;
-    font-family:inherit; color:var(--ink); min-width:0;
+    color:var(--ink); min-width:0;
   }
   .log-toggle h2{margin:0;}
   .log-toggle-arrow{
-    font-size:12px; color:var(--ink-soft); flex-shrink:0;
-    display:inline-block; transition:transform .2s ease;
+    background:none; border:none; cursor:pointer; padding:4px;
+    color:var(--ink-soft); flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
   }
-  .log-toggle[aria-expanded="true"] .log-toggle-arrow{transform:rotate(90deg);}
+  .log-toggle-arrow svg{display:block; transition:transform .2s ease;}
+  .log-toggle-arrow:hover{color:var(--ink);}
+  .log-toggle[aria-expanded="true"] .log-toggle-arrow svg{transform:rotate(180deg);}
   .log-toggle-count{font-size:12px; font-weight:700; color:var(--ink-soft); white-space:nowrap;}
   .log-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
   .log-body.open{max-height:2000px;}
@@ -643,11 +651,13 @@
   <div class="sidebar">
     <div class="card log-card">
       <div class="log-card-head">
-        <button class="log-toggle" id="logToggle" type="button" aria-expanded="false">
-          <span class="log-toggle-arrow" id="logToggleArrow">▸</span>
+        <div class="log-toggle" id="logToggleWrap" aria-expanded="false">
+          <button class="log-toggle-arrow" id="logToggleArrow" type="button" aria-label="Expand watch log">
+            <svg viewBox="0 0 20 12" width="14" height="8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l8 8 8-8"/></svg>
+          </button>
           <h2>Watch log</h2>
           <span class="log-toggle-count" id="logCount"></span>
-        </button>
+        </div>
         <div class="log-card-buttons">
           <button class="folder-btn sync-btn" id="syncBtn" type="button">Sync</button>
           <button class="folder-btn" id="folderBtn" type="button">Connect Documents folder</button>
@@ -712,7 +722,8 @@
   const folderBtn = document.getElementById('folderBtn');
   const syncBtn = document.getElementById('syncBtn');
   const folderStatus = document.getElementById('folderStatus');
-  const logToggle = document.getElementById('logToggle');
+  const logToggleWrap = document.getElementById('logToggleWrap');
+  const logToggleArrow = document.getElementById('logToggleArrow');
   const logBody = document.getElementById('logBody');
   const logCount = document.getElementById('logCount');
 
@@ -1301,6 +1312,41 @@
     return ep.name.toLowerCase().includes(q.toLowerCase());
   }
 
+  function buildShareUrl(ep){
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set('ep', `s${ep.season}e${ep.number}`);
+    return url.toString();
+  }
+
+  async function shareEpisode(ep, btn){
+    const url = buildShareUrl(ep);
+    const title = `S${ep.season}E${String(ep.number).padStart(2,'0')} — ${ep.name}`;
+    if(navigator.share){
+      try{
+        await navigator.share({ title, url });
+        return;
+      } catch(e){
+        if(e.name === 'AbortError') return;
+      }
+    }
+    try{
+      await navigator.clipboard.writeText(url);
+      if(btn){
+        const original = btn.getAttribute('title');
+        btn.classList.add('copied');
+        btn.setAttribute('title', 'Link copied!');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.setAttribute('title', original);
+        }, 1500);
+      }
+    } catch(e){
+      console.error(e);
+    }
+  }
+
   function findEp(season, number){
     return episodes.find(e => e.season === season && e.number === number) || null;
   }
@@ -1447,6 +1493,11 @@
         const status = isSeen ? '<span class="ep-check">✓ seen</span>'
           : isPending ? '<span class="ep-check pending">⏳ watching</span>'
           : '';
+        const shareBtn = isSeen
+          ? `<button class="ep-share" type="button" data-ep-id="${ep.id}" title="Share this episode" aria-label="Share this episode">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L7.04 9.81C6.5 9.31 5.79 9 5 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.91-2.92-2.91z"/></svg>
+            </button>`
+          : '';
         const dot = color ? `<span class="story-dot" style="background:${color}" title="Part of a multi-episode story"></span>` : '';
         const lock = blocked ? '🔒 ' : '';
         const watchControl = blocked
@@ -1465,6 +1516,7 @@
           <span class="ep-actions">
             ${watchControl}
             ${status}
+            ${shareBtn}
           </span>`;
         list.appendChild(row);
       });
@@ -1880,9 +1932,11 @@
   themeIcon.addEventListener('animationend', () => themeIcon.classList.remove('spinning'));
   folderBtn.addEventListener('click', handleFolderBtn);
   syncBtn.addEventListener('click', handleSyncBtn);
-  logToggle.addEventListener('click', () => {
+  logToggleArrow.addEventListener('click', () => {
     const isOpen = logBody.classList.toggle('open');
-    logToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    logToggleWrap.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    logToggleArrow.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    logToggleArrow.setAttribute('aria-label', isOpen ? 'Collapse watch log' : 'Expand watch log');
   });
   function handleEpisodeListClick(e){
     const watchBtn = e.target.closest('.ep-watch');
@@ -1903,6 +1957,12 @@
       if(ep) manualUnmark(ep);
       return;
     }
+    const shareBtn = e.target.closest('.ep-share');
+    if(shareBtn){
+      const ep = episodes.find(e2 => String(e2.id) === shareBtn.dataset.epId);
+      if(ep) shareEpisode(ep, shareBtn);
+      return;
+    }
   }
   seasonGroupsEl.addEventListener('click', handleEpisodeListClick);
   searchInput.addEventListener('input', () => {
@@ -1920,6 +1980,13 @@
       buildSeasonMap();
       statusEl.style.display = 'none';
       mainContent.style.display = 'grid';
+
+      const sharedEp = new URLSearchParams(window.location.search).get('ep');
+      if(sharedEp){
+        searchInput.value = sharedEp;
+        searchQuery = sharedEp;
+      }
+
       renderAll();
     })
     .catch(err => {
