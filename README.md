@@ -7,8 +7,8 @@ Colorado Springs è un comune degli Stati Uniti d'America e capoluogo e città p
 
 It’s an HTML-based random episode picker and progress tracker for South Park, for new watchers who don’t want the pressure of watching only “old episodes,” or for people who want to rewatch episodes without the trouble of remembering which ones they’ve watched.
 The whole “app” uses the free episodes available on www.southparkstudios.com.
--Episode Tracker
--Season Progress
--Connected or trilogy-type episodes
--Movies and their position in the watch order
- More to be added 
+/n Episode Tracker
+/n Season Progress
+/n Connected or trilogy-type episodes /n 
+Movies and their position in the watch order
+/n More to be added 
