@@ -64,7 +64,7 @@
     content:"";
     position:fixed;
     inset:0;
-    background-image: url("Assets/Background/background.jpg");
+    background-image: var(--bg-image, url("Assets/Background/background.jpg"));
     background-size:cover;
     background-position:center;
     filter:blur(6px);
@@ -224,7 +224,15 @@
     main{grid-template-columns: 1fr;}
   }
 
-  .search-card{grid-column:1 / -1; padding:14px 18px;}
+  .search-card{
+    width:calc(100% - 48px);
+    max-width:1132px;
+    margin:20px auto 0;
+    padding:14px 18px;
+    position:sticky;
+    top:14px;
+    z-index:20;
+  }
   #searchInput{
     width:100%; box-sizing:border-box; padding:11px 16px;
     border-radius:var(--radius-sm); border:1px solid var(--line);
@@ -621,11 +629,11 @@
 <p id="status">Loading the episode list…</p>
 <div id="errorBox"></div>
 
-<main id="mainContent" style="display:none;">
-  <div class="card search-card">
-    <input type="search" id="searchInput" placeholder="Search by name, or season/episode like S3E07…" autocomplete="off">
-  </div>
+<div class="card search-card" style="display:none;" id="searchCardWrap">
+  <input type="search" id="searchInput" placeholder="Search by name, or season/episode like S3E07…" autocomplete="off">
+</div>
 
+<main id="mainContent" style="display:none;">
   <div class="left-col">
     <div class="card picker-card">
       <button id="randomBtn" disabled>Get a random episode</button>
@@ -691,6 +699,7 @@
   const statusEl = document.getElementById('status');
   const errorBox = document.getElementById('errorBox');
   const mainContent = document.getElementById('mainContent');
+  const searchCardWrap = document.getElementById('searchCardWrap');
   const randomBtn = document.getElementById('randomBtn');
   const pickerSub = document.getElementById('pickerSub');
   const nowPlaying = document.getElementById('nowPlaying');
@@ -959,6 +968,41 @@
     connectFolder();
   }
 
+  const BACKGROUND_DIR = 'Assets/Background/';
+  const IMAGE_EXT_RE = /\.(jpg|jpeg|png|webp|gif|avif)$/i;
+
+  async function loadBackgroundFiles(){
+    try{
+      const res = await fetch(BACKGROUND_DIR + 'manifest.json');
+      if(res.ok){
+        const list = await res.json();
+        if(Array.isArray(list) && list.length) return list;
+      }
+    } catch(e){}
+
+    try{
+      const res = await fetch(BACKGROUND_DIR);
+      if(res.ok){
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const names = [...doc.querySelectorAll('a')]
+          .map(a => a.getAttribute('href') || '')
+          .filter(href => IMAGE_EXT_RE.test(href))
+          .map(href => href.split('/').pop());
+        if(names.length) return names;
+      }
+    } catch(e){}
+
+    return [];
+  }
+
+  async function applyRandomBackground(){
+    const files = await loadBackgroundFiles();
+    if(files.length === 0) return;
+    const chosen = files[Math.floor(Math.random() * files.length)];
+    document.documentElement.style.setProperty('--bg-image', `url("${BACKGROUND_DIR}${chosen}")`);
+  }
+
   const MUSIC_DIR = 'Assets/Music/';
   let musicTracks = [];
   let musicIndex = -1;
@@ -1061,6 +1105,7 @@
   });
 
   initMusicPlayer();
+  applyRandomBackground();
 
   function seasonColor(season){
     return SEASON_COLORS[(season - 1) % SEASON_COLORS.length];
@@ -1322,15 +1367,6 @@
 
   async function shareEpisode(ep, btn){
     const url = buildShareUrl(ep);
-    const title = `S${ep.season}E${String(ep.number).padStart(2,'0')} — ${ep.name}`;
-    if(navigator.share){
-      try{
-        await navigator.share({ title, url });
-        return;
-      } catch(e){
-        if(e.name === 'AbortError') return;
-      }
-    }
     try{
       await navigator.clipboard.writeText(url);
       if(btn){
@@ -1980,6 +2016,7 @@
       buildSeasonMap();
       statusEl.style.display = 'none';
       mainContent.style.display = 'grid';
+      searchCardWrap.style.display = 'block';
 
       const sharedEp = new URLSearchParams(window.location.search).get('ep');
       if(sharedEp){
