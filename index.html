@@ -1016,15 +1016,23 @@
   }
 
   async function loadMusicTracks(){
+    if(window.location.protocol === 'file:'){
+      return { tracks: [], error: "This page is open as a local file (file://) — browsers block scripts from fetching other local files. Serve this folder through a web server (e.g. `npx serve` or `python -m http.server`) and open it via http://localhost instead." };
+    }
+
     try{
       const res = await fetch(MUSIC_DIR + 'playlist.json');
       if(res.ok){
         const list = await res.json();
         if(Array.isArray(list) && list.length){
-          return list.map(name => ({ name, url: MUSIC_DIR + name }));
+          return { tracks: list.map(name => ({ name, url: MUSIC_DIR + name })), error: null };
         }
+        return { tracks: [], error: 'playlist.json loaded but was empty or not a list of filenames.' };
       }
-    } catch(e){}
+      console.error('playlist.json fetch failed:', res.status, res.statusText, MUSIC_DIR + 'playlist.json');
+    } catch(e){
+      console.error('playlist.json fetch error:', e, MUSIC_DIR + 'playlist.json');
+    }
 
     try{
       const res = await fetch(MUSIC_DIR);
@@ -1036,12 +1044,14 @@
           .filter(href => AUDIO_EXT_RE.test(href))
           .map(href => href.split('/').pop());
         if(names.length){
-          return names.map(name => ({ name, url: MUSIC_DIR + name }));
+          return { tracks: names.map(name => ({ name, url: MUSIC_DIR + name })), error: null };
         }
       }
-    } catch(e){}
+    } catch(e){
+      console.error('Directory listing fetch error:', e, MUSIC_DIR);
+    }
 
-    return [];
+    return { tracks: [], error: `Couldn't load ${MUSIC_DIR}playlist.json — check the path/casing is exactly right and it's valid JSON (see the browser console and Network tab for the real error).` };
   }
 
   async function playMusicTrack(index){
@@ -1055,10 +1065,18 @@
       musicPlayPause.textContent = '⏸';
       musicTrackName.textContent = displayTrackName(track.name);
     } catch(e){
-      console.error(e);
-      musicStatus.textContent = "Couldn't play that track.";
+      console.error('Music playback error for', track.url, e);
+      musicStatus.textContent = `Couldn't play "${track.name}" — ${e.name}: ${e.message}. Check it exists at ${track.url}.`;
     }
   }
+
+  musicAudio.addEventListener('error', () => {
+    const err = musicAudio.error;
+    const codes = { 1: 'fetch aborted', 2: 'network error', 3: "couldn't decode file", 4: 'format not supported or file not found' };
+    const track = musicTracks[musicIndex];
+    console.error('Audio element error:', err, 'for', track && track.url);
+    musicStatus.textContent = `Audio error: ${err ? (codes[err.code] || 'unknown') : 'unknown'} — check ${track ? track.url : 'the file path'} exists and is a valid audio file.`;
+  });
 
   function toggleMusicPlayPause(){
     if(musicTracks.length === 0) return;
@@ -1080,9 +1098,10 @@
   musicAudio.addEventListener('ended', () => playMusicTrack(musicIndex + 1));
 
   async function initMusicPlayer(){
-    musicTracks = await loadMusicTracks();
+    const result = await loadMusicTracks();
+    musicTracks = result.tracks;
     if(musicTracks.length === 0){
-      musicStatus.textContent = 'No playlist found. Add Assets/Music/playlist.json listing your track filenames.';
+      musicStatus.textContent = result.error || 'No playlist found.';
       musicControls.style.display = 'none';
       return;
     }
